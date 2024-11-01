@@ -1,0 +1,663 @@
+---
+title: "Case Study 01 Documentation"
+output: html_notebook
+---
+```{r}
+
+#Video: https://youtu.be/JICeHpnnP6I
+
+
+library(ggplot2)
+library(GGally)
+library(dplyr)
+library(caret)
+library(e1071)
+
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+```{r}
+library(ggthemes)
+```
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+head(CaseStudy1.data)
+```
+
+```{r}
+summary(CaseStudy1.data)
+```
+
+```{r}
+sum(is.na(CaseStudy1.data))
+```
+
+```{r}
+hist(dataCS$Age, main="Age Distribution", xlab="Age", col="blue")
+
+```
+
+
+
+
+```{r}
+numeric_vars <- dataCS %>% select_if(is.numeric)
+ggpairs(numeric_vars)
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = OverTime, fill = Attrition)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Attrition vs OverTime", x = "OverTime", y = "Count") +
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = OverTime, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Attrition vs OverTime", x = "OverTime", y = "Percentage") +
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = Attrition, y = Age, fill = Attrition)) +
+  geom_boxplot() +
+  labs(title = "Age Distribution by Attrition")+
+  theme_economist()
+
+```
+```{r}
+attrition_counts <- table(dataCS$Attrition)
+attrition_percentages <- prop.table(attrition_counts) * 100
+print(attrition_percentages)
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = Department, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  labs(title = "Attrition Rate by Department", x = "Department", y = "Percent") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = MonthlyIncome, fill = Attrition)) +
+  geom_histogram(binwidth = 1000, position = "dodge", color = "black") +
+  labs(title = "Monthly Income Distribution by Attrition Status", x = "Monthly Income", y = "Count") +
+  theme_economist()
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = Age, y = DistanceFromHome)) +
+  geom_point(aes(color = Attrition)) +
+  labs(title = "Age vs Distance from Home", x = "Age", y = "Distance from Home")+
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = Attrition)) +
+  geom_bar(fill = "skyblue") +
+  labs(title = "Distribution of Attrition")+
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = "", fill = Attrition)) +
+  geom_bar(width = 1) +
+  coord_polar("y") +
+  labs(title = "Distribution of Attrition") +
+  theme_void() +
+  scale_fill_brewer(palette = "Blues") +
+  geom_text(aes(label = scales::percent(..count../sum(..count..))), 
+            stat = "count", position = position_stack(vjust = 0.5))
+
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = JobRole, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  labs(title = "Attrition by Job Role", x = "Job Role", y = "Proportion") +
+  theme(axis.text.x = element_text(angle = 65, hjust = 1)) 
+
+```
+
+
+
+
+```{r}
+ggplot(df, aes(x = MaritalStatus, y = MonthlyIncome, fill = Attrition)) +
+  geom_boxplot() +
+  labs(title = "Monthly Income by Marital Status and Attrition Status",
+       x = "Marital Status", y = "Monthly Income") +
+  theme_minimal()
+
+
+```
+
+```{r}
+ggplot(df, aes(x = MaritalStatus, fill = Attrition)) +
+  geom_bar(position = "fill") +
+  labs(title = "Attrition Rate by Marital Status",
+       x = "Marital Status", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_economist()
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Filter dataset for Single marital status and calculate percentages
+single_data <- data %>% 
+  filter(MaritalStatus == "Single") %>%
+  group_by(OverTime, Attrition) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count / sum(count) * 100)
+
+# Create the plot with percentage
+ggplot(single_data, aes(x = OverTime, y = percentage, fill = Attrition)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Attrition Percentage by Overtime for Single Employees",
+       x = "Overtime",
+       y = "Percentage of Employees",
+       fill = "Attrition") +
+  theme_minimal()
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = Attrition, y = MonthlyIncome, fill = Attrition)) +
+  geom_boxplot() +
+  labs(title = "Monthly Income Distribution by Attrition")+
+  theme_economist()
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Filter the data to include only "Single" marital status
+data_single <- data %>%
+  filter(MaritalStatus == "Single") %>%
+  group_by(JobSatisfaction, Attrition) %>%
+  summarize(Count = n()) %>%
+  ungroup() %>%
+  group_by(JobSatisfaction) %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+
+# Plot
+ggplot(data_single, aes(x = factor(JobSatisfaction), y = Percentage, fill = Attrition)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Attrition by Job Satisfaction for Single Employees",
+       x = "Job Satisfaction",
+       y = "Percentage",
+       fill = "Attrition") +
+  theme_economist()
+```
+
+
+```{r}
+ggplot(df, aes(x = MaritalStatus, y = MonthlyIncome, fill = Attrition)) +
+  geom_boxplot() +
+  facet_wrap(~ factor(PerformanceRating)) +
+  labs(title = "Monthly Income by Marital Status, Performance Rating, and Attrition Status",
+       x = "Marital Status", y = "Monthly Income") +
+  theme_minimal()
+
+
+```
+
+
+
+```{r}
+ggplot(dataCS, aes(x = Attrition, fill = Attrition)) +
+  geom_bar() +
+  labs(title = "Attrition Distribution", x = "Attrition", y = "Count")+theme_economist()
+
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = JobRole, y = MonthlyIncome, fill = Attrition)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Attrition vs Monthly Income by Job Role", x = "Job Role", y = "Monthly Income") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.title = element_text(hjust = 0.5))
+
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = MonthlyIncome, fill = Attrition)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Plot of Monthly Income by Attrition", x = "Monthly Income", y = "Density") +
+  theme_economist()
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = MonthlyIncome, y = JobSatisfaction, color = Attrition)) +
+  geom_point() +
+  facet_wrap(~ JobRole) +
+  labs(title = "Monthly Income vs Job Satisfaction by Job Role and Attrition", 
+       x = "Monthly Income", y = "Job Satisfaction") +
+  theme_minimal()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = MonthlyIncome)) +
+  geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
+  facet_wrap(~ Attrition) +
+  labs(title = "Monthly Income Distribution by Attrition", x = "Monthly Income", y = "Count")
+
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = TotalWorkingYears, y = MonthlyIncome, color = Attrition)) +
+  geom_jitter() +
+  labs(title = "Covariation: Total Working Years vs Monthly Income", 
+       x = "Total Working Years", y = "Monthly Income")+theme_economist()
+
+```
+
+
+```{r}
+# Density plot for Monthly Income across Attrition
+ggplot(dataCS, aes(x = MonthlyIncome, fill = Attrition)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Plot of Monthly Income by Attrition", x = "Monthly Income", y = "Density")+theme_economist()
+
+```
+
+```{r}
+library(GGally)
+
+dataCS %>%
+  select(JobRole, MonthlyIncome, TotalWorkingYears, Attrition) %>%
+  ggpairs(aes(color = Attrition))
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = Age, y = MonthlyIncome, color = Attrition)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Age vs Monthly Income (Colored by Attrition)", 
+       x = "Age", y = "Monthly Income") +
+  theme_economist()
+
+```
+
+
+```{r}
+ggplot(dataCS, aes(x = TotalWorkingYears, y = MonthlyIncome, color = Attrition)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Total Working Years v Monthly Income ", 
+       x = "Total Working Years", y = "Monthly Income") +
+  theme_economist()
+
+```
+
+```{r}
+ggplot(dataCS, aes(x = JobRole, y = MonthlyIncome, fill = Attrition)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
+  labs(title = "Monthly Income by Job Role and Attrition", 
+       x = "Job Role", y = "Monthly Income") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+```
+
+```{r}
+library(e1071)
+library(caret)
+set.seed(7)
+trainIndices = sample(seq(1:length(dataCS$Age)),round(.7*length(dataCS$Age)))
+trainCS = dataCS[trainIndices,]
+testCS = dataCS[-trainIndices,]
+
+model = naiveBayes(trainCS[,c("Age","MonthlyIncome")],trainCS$Attrition)
+table(predict(model,testCS[,c("Age","MonthlyIncome")]),testCS$Attrition)
+confusionMatrix(table(predict(model,testCS[,c("Age","MonthlyIncome")]),testCS$Attrition), mode ="everything")
+predict(model,data.frame(Age = 30, MonthlyIncome = 7500), type = "raw")
+```
+
+
+```{r}
+library(class)
+library(caret)
+library(e1071)
+classifications = knn(trainCS[,c("Age","MonthlyIncome")],testCS[,c("Age","MonthlyIncome")],trainCS$Attrition, prob = TRUE, k = 3)
+table(classifications,testCS$Attrition)
+confusionMatrix(table(classifications,testCS$Attrition))
+confusionMatrix(factor(classifications), factor(testCS$Attrition), mode = "everything")
+```
+
+
+
+```{r}
+library(dplyr)
+library(caret)
+library(e1071)
+library(class)
+
+df <- read.csv("https://github.com/BivinSadler/MSDS_6306_Doing-Data-Science/raw/refs/heads/Master/Unit%208%20and%209%20Case%20Study%201/CaseStudy1-data.csv")
+df$Attrition <- as.factor(df$Attrition)
+df <- df %>% dplyr::select(-Over18, -Department, -EmployeeCount, -StandardHours, -EmployeeNumber, -ID)
+
+```
+
+
+```{r}
+iterations = 100
+splitPerc = 0.7  
+
+metrics_df = data.frame(
+  Accuracy = numeric(iterations), 
+  Sensitivity = numeric(iterations), 
+  Specificity = numeric(iterations), 
+  F1 = numeric(iterations)
+)
+
+for(j in 1:iterations)
+{
+  trainIndices = sample(1:nrow(df), round(splitPerc * nrow(df)))
+  train = df[trainIndices, ]
+  test = df[-trainIndices, ]
+  
+  model = naiveBayes(Attrition ~ ., data = train, laplace = 1)
+  
+  preds = predict(model, test)
+  
+  CM = confusionMatrix(preds, test$Attrition, positive = "Yes")
+  
+  metrics_df$Accuracy[j] = CM$overall['Accuracy']
+  metrics_df$Sensitivity[j] = CM$byClass['Sensitivity']
+  metrics_df$Specificity[j] = CM$byClass['Specificity']
+  metrics_df$F1[j] = CM$byClass['F1']
+  
+}
+
+MeanMetrics = colMeans(metrics_df, na.rm = TRUE)
+print("Average metrics over iterations:")
+print(MeanMetrics)
+
+
+```
+
+```{r}
+
+predictor_vars <- model.matrix(~ . - Attrition, data = df)[, -1]
+df_knn <- data.frame(Attrition = df$Attrition, predictor_vars)
+
+iterations <- 100
+splitPerc <- 0.7
+
+metrics_df_knn = data.frame(
+  Accuracy = numeric(iterations), 
+  Sensitivity = numeric(iterations), 
+  Specificity = numeric(iterations), 
+  F1 = numeric(iterations)
+)
+
+for(j in seq_len(iterations)) {
+  trainIndices <- sample(seq_len(nrow(df_knn)), size = round(splitPerc * nrow(df_knn)))
+  train <- df_knn[trainIndices, ]
+  test <- df_knn[-trainIndices, ]
+
+  preds <- knn(train[, -1], test[, -1], train$Attrition, k = 3)
+  
+  CM = confusionMatrix(preds, test$Attrition, positive = "Yes")
+  
+  metrics_df_knn$Accuracy[j] = CM$overall['Accuracy']
+  metrics_df_knn$Sensitivity[j] = CM$byClass['Sensitivity']
+  metrics_df_knn$Specificity[j] = CM$byClass['Specificity']
+  metrics_df_knn$F1[j] = CM$byClass['F1']
+  
+}
+
+MeanMetrics_knn = colMeans(metrics_df_knn, na.rm = TRUE)
+print("Average metrics over all iterations:")
+print(MeanMetrics_knn)
+
+
+```
+
+
+
+
+```{r}
+library(dplyr)
+library(caret)
+library(e1071)
+data <- read.csv("https://github.com/BivinSadler/MSDS_6306_Doing-Data-Science/raw/refs/heads/Master/Unit%208%20and%209%20Case%20Study%201/CaseStudy1-data.csv")
+
+
+data$Attrition <- as.factor(data$Attrition)
+#remove useless columns
+data_clean <- data %>%
+  dplyr::select(-Over18, -Department, -EmployeeCount, -StandardHours, -EmployeeNumber, -ID)
+
+AccHolder <- numeric(100)
+SensHolder <- numeric(100)
+SpecHolder <- numeric(100)
+F1Holder <- numeric(100)   
+
+for (seed in 1:100) {
+  set.seed(seed)
+  
+  trainIndices <- sample(seq_len(nrow(data_clean)), size = round(0.7 * nrow(data_clean)))
+  trainData <- data_clean[trainIndices, ]
+  testData <- data_clean[-trainIndices, ]
+  
+  #trainData <- na.omit(trainData)
+  #testData <- na.omit(testData)
+  
+  trainData <- trainData %>% mutate_if(is.character, as.factor)
+  testData <- testData %>% mutate_if(is.character, as.factor)
+  
+  predictor_vars <- setdiff(names(trainData), "Attrition")
+  
+  trainData_balanced <- upSample(x = trainData[, predictor_vars], y = trainData$Attrition)
+  
+  trainData_balanced$Attrition <- trainData_balanced$Class
+  trainData_balanced$Class <- NULL
+  
+  model_nb <- naiveBayes(Attrition ~ ., data = trainData_balanced)
+  
+  preds_nb <- predict(model_nb, newdata = testData)
+  
+  cm_nb <- confusionMatrix(preds_nb, testData$Attrition, positive = "Yes")
+  
+  AccHolder[seed] <- cm_nb$overall["Accuracy"]
+  SensHolder[seed] <- cm_nb$byClass["Sensitivity"]
+  SpecHolder[seed] <- cm_nb$byClass["Specificity"]
+  F1Holder[seed] <- cm_nb$byClass["F1"]
+}
+
+mean_accuracy <- mean(AccHolder)
+se_accuracy <- sd(AccHolder) / sqrt(100)
+
+mean_sensitivity <- mean(SensHolder)
+se_sensitivity <- sd(SensHolder) / sqrt(100)
+
+mean_specificity <- mean(SpecHolder)
+se_specificity <- sd(SpecHolder) / sqrt(100)
+
+mean_F1 <- mean(F1Holder)
+se_F1 <- sd(F1Holder) / sqrt(100)
+
+#mean_accuracy
+#se_accuracy
+#mean_sensitivity
+#se_sensitivity
+#mean_specificity
+#se_specificity
+#mean_F1
+#se_F1
+
+metrics_df <- data.frame(
+  Seed = 1:100,
+  Accuracy = AccHolder,
+  Sensitivity = SensHolder,
+  Specificity = SpecHolder,
+  F1_Score = F1Holder
+)
+
+best_acc_index <- which.max(metrics_df$Accuracy)
+cat("Iteration with Highest Accuracy:\n")
+print(metrics_df[best_acc_index, ])
+
+best_sens_index <- which.max(metrics_df$Sensitivity)
+cat("\nIteration with Highest Sensitivity:\n")
+print(metrics_df[best_sens_index, ])
+
+best_spec_index <- which.max(metrics_df$Specificity)
+cat("\nIteration with Highest Specificity:\n")
+print(metrics_df[best_spec_index, ])
+
+best_f1_index <- which.max(metrics_df$F1_Score)
+cat("\nIteration with Highest F1 Score:\n")
+print(metrics_df[best_f1_index, ])
+
+
+
+```
+
+
+```{r}
+set.seed(92)
+
+trainIndices <- sample(seq_len(nrow(data_clean)), size = round(0.7 * nrow(data_clean)))
+trainData <- data_clean[trainIndices, ]
+testData <- data_clean[-trainIndices, ]
+
+trainData <- na.omit(trainData)
+testData <- na.omit(testData)
+
+trainData <- trainData %>% mutate_if(is.character, as.factor)
+testData <- testData %>% mutate_if(is.character, as.factor)
+
+predictor_vars <- setdiff(names(trainData), "Attrition")
+
+trainData_balanced <- upSample(x = trainData[, predictor_vars], y = trainData$Attrition)
+
+trainData_balanced$Attrition <- trainData_balanced$Class
+trainData_balanced$Class <- NULL
+
+model_nb <- naiveBayes(Attrition ~ ., data = trainData_balanced)
+
+preds_nb <- predict(model_nb, newdata = testData)
+
+print(confusionMatrix(preds_nb, testData$Attrition, positive = "Yes"))
+f1_score <- cm_nb$byClass["F1"]
+cat("F1 Score:", f1_score, "\n")
+
+```
+
+
+```{r}
+library(dplyr)
+library(e1071)   
+library(caret)   
+data <- read.csv("https://github.com/BivinSadler/MSDS_6306_Doing-Data-Science/raw/refs/heads/Master/Unit%208%20and%209%20Case%20Study%201/CaseStudy1-data.csv")
+
+new_data <- read.csv("https://github.com/BivinSadler/MSDS_6306_Doing-Data-Science/raw/refs/heads/Master/Unit%208%20and%209%20Case%20Study%201/CaseStudy1CompSet%20No%20Attrition.csv")
+
+
+data$Attrition <- as.factor(data$Attrition)
+
+data_clean <- data %>%
+  dplyr::select(-Over18, -Department, -EmployeeCount, -StandardHours, -EmployeeNumber)
+
+set.seed(92)
+
+trainIndices <- sample(seq_len(nrow(data_clean)), size = round(0.7 * nrow(data_clean)))
+trainData <- data_clean[trainIndices, ]
+testData <- data_clean[-trainIndices, ]
+
+trainData <- na.omit(trainData)
+testData <- na.omit(testData)
+
+trainData <- trainData %>% mutate_if(is.character, as.factor)
+testData <- testData %>% mutate_if(is.character, as.factor)
+
+predictor_vars <- setdiff(names(trainData), "Attrition")
+
+trainData_balanced <- upSample(x = trainData[, predictor_vars], y = trainData$Attrition)
+
+trainData_balanced$Attrition <- trainData_balanced$Class
+trainData_balanced$Class <- NULL
+
+model_nb <- naiveBayes(Attrition ~ ., data = trainData_balanced)
+
+#new data
+new_data_clean <- new_data %>%
+  dplyr::select(-Over18, -Department, -EmployeeCount, -StandardHours, -EmployeeNumber)
+
+new_data_clean <- na.omit(new_data_clean)
+
+new_data_clean <- new_data_clean %>% mutate_if(is.character, as.factor)
+
+for (var in names(trainData_balanced)) {
+  if (is.factor(trainData_balanced[[var]])) {
+    if (var %in% names(new_data_clean)) {
+      train_levels <- levels(trainData_balanced[[var]])
+      most_freq_level <- names(sort(table(trainData_balanced[[var]]), decreasing = TRUE))[1]
+      new_data_clean[[var]] <- as.character(new_data_clean[[var]])
+      unknown_level_indices <- which(!new_data_clean[[var]] %in% train_levels)
+      if (length(unknown_level_indices) > 0) {
+        new_data_clean[[var]][unknown_level_indices] <- most_freq_level
+      }
+      new_data_clean[[var]] <- factor(new_data_clean[[var]], levels = train_levels)
+    }
+  }
+}
+
+predictions <- predict(model_nb, newdata = new_data_clean)
+
+
+new_data_clean$Predicted_Attrition <- predictions
+
+
+if (!"ID" %in% names(new_data_clean)) {
+  new_data_clean$ID <- new_data$ID[rownames(new_data_clean)]
+}
+
+new_data_with_predictions <- new_data %>%
+  left_join(new_data_clean %>% dplyr::select(ID, Predicted_Attrition), by = "ID")
+
+head(new_data_with_predictions)
+
+write.csv(new_data_with_predictions, file="Case1PredictionsBrarAttrition.csv")
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
