@@ -1,2 +1,2 @@
 # Case-Study-01-Brar
-My investigation into attrition at Frito Lay
+Presenting my investigation into attrition at Frito Lay. Please see project releases for Rmd and CSV with predictions. 
